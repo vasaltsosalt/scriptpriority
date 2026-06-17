@@ -2409,7 +2409,7 @@ local function runAutoSnipe()
 
     local _flyTok = newCarpetCancelToken()
     carpetFly(hrp, targetBasePos, {
-        speed = isSecondFloor and 185 or 295,
+        speed = isSecondFloor and 175 or 215,
         safetyPad = 0,
         routeAroundObstacles = true,
         cancelToken = _flyTok,
