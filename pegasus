@@ -1,4 +1,3 @@
-
 repeat task.wait() until game:IsLoaded()
 
 local Players = game:GetService("Players")
@@ -2220,6 +2219,32 @@ local function isBeingFused(animalData)
     return false
 end
 
+local function useGrappleHookBeforeTweenBest()
+    local character = Player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local backpack = Player:FindFirstChildOfClass("Backpack") or Player:FindFirstChild("Backpack")
+    if not humanoid or not character then return false end
+
+    local grapple = (backpack and backpack:FindFirstChild("Grapple Hook")) or character:FindFirstChild("Grapple Hook")
+    if not grapple or not grapple:IsA("Tool") then
+        notify("Tween Best", "Grapple Hook not found", "warn")
+        return false
+    end
+
+    pcall(function()
+        if grapple.Parent ~= character then
+            humanoid:EquipTool(grapple)
+        end
+    end)
+    task.wait(0.15)
+
+    pcall(function()
+        grapple:Activate()
+    end)
+    task.wait(0.35)
+    return true
+end
+
 local function runAutoSnipe()
     if TP_STATE.isMoving then return end
     local bestAnimal, bestPart = nil, nil
@@ -2265,7 +2290,7 @@ local function runAutoSnipe()
 
     local _flyTok = newCarpetCancelToken()
     carpetFly(hrp, targetBasePos, {
-        speed = isSecondFloor and 165 or 175,
+        speed = isSecondFloor and 195 or 210,
         safetyPad = 0,
         routeAroundObstacles = true,
         cancelToken = _flyTok,
@@ -2423,6 +2448,7 @@ end
 
 function runTweenBest()
     if TP_STATE.isMoving then notify("Tween Best", "Already moving", "warn"); return end
+    useGrappleHookBeforeTweenBest()
     runAutoSnipe()
 end
 
