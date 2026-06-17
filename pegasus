@@ -2277,6 +2277,10 @@ local function runAutoSnipe()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if not hrp or not hum or hum.Health <= 0 then TP_STATE.isMoving = false; return end
 
+    -- Use Grapple Hook only after a valid brainrot target is already found.
+    -- This prevents the grapple equip/activate delay from clearing or desyncing target selection.
+    useGrappleHookBeforeTweenBest()
+
     local exactPos = bestPart.Position
     local carpet = Player.Backpack:FindFirstChild("Flying Carpet") or char:FindFirstChild("Flying Carpet")
     if carpet then hum:EquipTool(carpet) end
@@ -2448,7 +2452,6 @@ end
 
 function runTweenBest()
     if TP_STATE.isMoving then notify("Tween Best", "Already moving", "warn"); return end
-    useGrappleHookBeforeTweenBest()
     runAutoSnipe()
 end
 
