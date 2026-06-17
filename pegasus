@@ -2219,6 +2219,22 @@ local function isBeingFused(animalData)
     return false
 end
 
+local GrappleNetModule
+local function loadGrappleNet()
+    if GrappleNetModule then return true end
+    local ok, mod = pcall(function()
+        local packages = ReplicatedStorage:WaitForChild("Packages", 5)
+        local netFolder = packages and packages:WaitForChild("Net", 5)
+        local moduleScript = netFolder and netFolder:FindFirstChildWhichIsA("ModuleScript", true)
+        return moduleScript and require(moduleScript)
+    end)
+    if ok and type(mod) == "table" then
+        GrappleNetModule = mod
+        return true
+    end
+    return false
+end
+
 local function useGrappleHookBeforeTweenBest()
     local character = Player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -2231,19 +2247,17 @@ local function useGrappleHookBeforeTweenBest()
         return false
     end
 
-    -- Make sure the grapple is actually the equipped tool before activating it.
-    pcall(function()
-        humanoid:UnequipTools()
-    end)
-    task.wait(0.03)
-
-    pcall(function()
-        if grapple.Parent ~= character then
+    if grapple.Parent ~= character then
+        pcall(function()
+            humanoid:UnequipTools()
+        end)
+        task.wait(0.03)
+        pcall(function()
             humanoid:EquipTool(grapple)
-        end
-    end)
+        end)
+    end
 
-    local deadline = os.clock() + 0.35
+    local deadline = os.clock() + 0.65
     while grapple.Parent ~= character and os.clock() < deadline do
         task.wait()
     end
@@ -2253,23 +2267,30 @@ local function useGrappleHookBeforeTweenBest()
         return false
     end
 
-    -- Activate once, then one frame retry. Some tools ignore Activate on the same frame as equip.
-    local ok = pcall(function()
-        grapple:Activate()
-    end)
-    task.wait()
-    if grapple.Parent == character then
-        pcall(function()
+    -- Same activation method from grapple.txt: Packages.Net RemoteEvent("UseItem"):FireServer(2)
+    local used = false
+    if loadGrappleNet() and GrappleNetModule then
+        used = pcall(function()
+            GrappleNetModule:RemoteEvent("UseItem"):FireServer(2)
+        end)
+    end
+
+    -- Fallback for executors or game versions where the Net module path changes.
+    if not used then
+        used = pcall(function()
             grapple:Activate()
         end)
     end
 
-    if ok then
+    if used then
         notify("Tween Best", "Grapple Hook used", "info")
+        task.wait(0.15)
+    else
+        notify("Tween Best", "Grapple Hook activation failed", "warn")
     end
-    return ok
-end
 
+    return used
+end
 local function runAutoSnipe()
     if TP_STATE.isMoving then return end
     local bestAnimal, bestPart = nil, nil
@@ -2302,6 +2323,13 @@ local function runAutoSnipe()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if not hrp or not hum or hum.Health <= 0 then TP_STATE.isMoving = false; return end
 
+    -- Auto Snipe now equips and fires the grapple before any tween/carpet movement starts.
+    if not useGrappleHookBeforeTweenBest() then TP_STATE.isMoving = false; return end
+    task.wait(0.05)
+    char = Player.Character
+    hrp = char and char:FindFirstChild("HumanoidRootPart")
+    hum = char and char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum or hum.Health <= 0 then TP_STATE.isMoving = false; return end
     local exactPos = bestPart.Position
     local carpet = Player.Backpack:FindFirstChild("Flying Carpet") or char:FindFirstChild("Flying Carpet")
     if carpet then hum:EquipTool(carpet) end
@@ -2473,9 +2501,6 @@ end
 
 function runTweenBest()
     if TP_STATE.isMoving then notify("Tween Best", "Already moving", "warn"); return end
-    -- Use Grapple Hook once on TP click, give it a tiny equip/activate window, then continue normally.
-    useGrappleHookBeforeTweenBest()
-    task.wait(0.12)
     runAutoSnipe()
 end
 
