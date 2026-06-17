@@ -2225,11 +2225,17 @@ local function useGrappleHookBeforeTweenBest()
     local backpack = Player:FindFirstChildOfClass("Backpack") or Player:FindFirstChild("Backpack")
     if not humanoid or not character then return false end
 
-    local grapple = (backpack and backpack:FindFirstChild("Grapple Hook")) or character:FindFirstChild("Grapple Hook")
+    local grapple = character:FindFirstChild("Grapple Hook") or (backpack and backpack:FindFirstChild("Grapple Hook"))
     if not grapple or not grapple:IsA("Tool") then
         notify("Tween Best", "Grapple Hook not found", "warn")
         return false
     end
+
+    -- Make sure the grapple is actually the equipped tool before activating it.
+    pcall(function()
+        humanoid:UnequipTools()
+    end)
+    task.wait(0.03)
 
     pcall(function()
         if grapple.Parent ~= character then
@@ -2237,19 +2243,26 @@ local function useGrappleHookBeforeTweenBest()
         end
     end)
 
-    -- Activate immediately before Tween Best equips Flying Carpet.
+    local deadline = os.clock() + 0.35
+    while grapple.Parent ~= character and os.clock() < deadline do
+        task.wait()
+    end
+
+    if grapple.Parent ~= character then
+        notify("Tween Best", "Grapple Hook failed to equip", "warn")
+        return false
+    end
+
+    -- Activate once, then one frame retry. Some tools ignore Activate on the same frame as equip.
     local ok = pcall(function()
         grapple:Activate()
     end)
-
-    -- One tiny delayed retry, but only if it is still the equipped tool.
-    task.delay(0.03, function()
-        if grapple and grapple.Parent == character then
-            pcall(function()
-                grapple:Activate()
-            end)
-        end
-    end)
+    task.wait()
+    if grapple.Parent == character then
+        pcall(function()
+            grapple:Activate()
+        end)
+    end
 
     if ok then
         notify("Tween Best", "Grapple Hook used", "info")
@@ -2460,8 +2473,9 @@ end
 
 function runTweenBest()
     if TP_STATE.isMoving then notify("Tween Best", "Already moving", "warn"); return end
-    -- Use Grapple Hook once immediately, then continue target selection normally.
+    -- Use Grapple Hook once on TP click, give it a tiny equip/activate window, then continue normally.
     useGrappleHookBeforeTweenBest()
+    task.wait(0.12)
     runAutoSnipe()
 end
 
