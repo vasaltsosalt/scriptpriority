@@ -2236,13 +2236,25 @@ local function useGrappleHookBeforeTweenBest()
             humanoid:EquipTool(grapple)
         end
     end)
-    task.wait(0.15)
 
-    pcall(function()
+    -- Activate immediately before Tween Best equips Flying Carpet.
+    local ok = pcall(function()
         grapple:Activate()
     end)
-    task.wait(0.35)
-    return true
+
+    -- One tiny delayed retry, but only if it is still the equipped tool.
+    task.delay(0.03, function()
+        if grapple and grapple.Parent == character then
+            pcall(function()
+                grapple:Activate()
+            end)
+        end
+    end)
+
+    if ok then
+        notify("Tween Best", "Grapple Hook used", "info")
+    end
+    return ok
 end
 
 local function runAutoSnipe()
@@ -2448,8 +2460,8 @@ end
 
 function runTweenBest()
     if TP_STATE.isMoving then notify("Tween Best", "Already moving", "warn"); return end
-    -- Fire the Grapple Hook once on TP click without blocking or touching target selection.
-    task.spawn(useGrappleHookBeforeTweenBest)
+    -- Use Grapple Hook once immediately, then continue target selection normally.
+    useGrappleHookBeforeTweenBest()
     runAutoSnipe()
 end
 
