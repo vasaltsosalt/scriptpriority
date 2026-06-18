@@ -2307,13 +2307,13 @@ local function runAutoSnipe()
     end
     task.wait(0.1)
     hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(bestFace.X, hrp.Position.Y, bestFace.Z))
-    -- Only do the clone-in step for second-floor brainrots.
+    -- Do the clone-in step for second-floor and higher-floor brainrots.
     -- Walk a bit farther first so the clone has enough forward push to enter cleanly.
-    local _cloneNeeded = isFloor2
+    local _cloneNeeded = isSecondFloor
     local _cloneOk = false
     if _cloneNeeded then
         hrp.Velocity = Vector3.zero; hrp.Velocity = Vector3.zero
-        walkForward(1.4)
+        walkForward(2)
         task.wait(0.25)
         local _stab = os.clock()
         while os.clock() - _stab < 0.15 do
