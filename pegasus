@@ -2313,7 +2313,7 @@ local function runAutoSnipe()
     local _cloneOk = false
     if _cloneNeeded then
         hrp.Velocity = Vector3.zero; hrp.Velocity = Vector3.zero
-        walkForward(0.6)
+        walkForward(1)
         task.wait(0.25)
         local _stab = os.clock()
         while os.clock() - _stab < 0.15 do
