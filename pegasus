@@ -2277,7 +2277,6 @@ local function runAutoSnipe()
         hrp.Velocity = Vector3.zero
     end
     task.wait(0.15)
-
     if not isSecondFloor then
         local bestSpot = CLONE_POSITIONS_FLOOR[1]
         local minDst = math.huge
@@ -2285,17 +2284,24 @@ local function runAutoSnipe()
             local d = (bestPart.Position - v).Magnitude
             if d < minDst then minDst = d; bestSpot = v end
         end
-        for _ = 1, 5 do
-            hrp.Velocity = Vector3.zero; hrp.Velocity = Vector3.zero
+
+        -- First floor: after the first base tween, hard TP to the laser doors.
+        -- This prevents carpet/tween momentum from making it walk toward the base instead.
+        pcall(function()
+            hum:Move(Vector3.zero, false)
+        end)
+        for _ = 1, 8 do
+            hrp.Velocity = Vector3.zero
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
             task.wait(0.02)
         end
-        for i = 1, 6 do
+        for _ = 1, 8 do
+            hrp.CFrame = CFrame.new(bestSpot)
             hrp.Velocity = Vector3.zero
-            if (hrp.Position - bestSpot).Magnitude > 3 then
-                hrp.CFrame = CFrame.new(bestSpot)
-                hrp.Velocity = Vector3.zero
-                task.wait(0.05)
-            end
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            task.wait(0.04)
         end
     end
 
