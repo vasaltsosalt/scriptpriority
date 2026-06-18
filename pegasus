@@ -2389,13 +2389,6 @@ local function runAutoSnipe()
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     if not hrp or not hum or hum.Health <= 0 then TP_STATE.isMoving = false; return end
 
-    -- Auto Snipe now equips and fires the grapple before any tween/carpet movement starts.
-    if not useGrappleHookBeforeTweenBest() then TP_STATE.isMoving = false; return end
-    task.wait(0.05)
-    char = Player.Character
-    hrp = char and char:FindFirstChild("HumanoidRootPart")
-    hum = char and char:FindFirstChildOfClass("Humanoid")
-    if not hrp or not hum or hum.Health <= 0 then TP_STATE.isMoving = false; return end
     local exactPos = bestPart.Position
     local carpet = Player.Backpack:FindFirstChild("Flying Carpet") or char:FindFirstChild("Flying Carpet")
     if carpet then hum:EquipTool(carpet) end
@@ -2411,7 +2404,7 @@ local function runAutoSnipe()
 
     local _flyTok = newCarpetCancelToken()
     carpetFly(hrp, targetBasePos, {
-        speed = (isSecondFloor and not isFloor2) and 170 or 170,
+        speed = (isSecondFloor and not isFloor2) and 155 or 155,
         safetyPad = 0,
         routeAroundObstacles = true,
         cancelToken = _flyTok,
