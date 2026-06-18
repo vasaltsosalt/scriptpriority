@@ -2277,7 +2277,7 @@ local function runAutoSnipe()
         hrp.Velocity = Vector3.zero
     end
     task.wait(0.15)
-    if not isSecondFloor or isFloor2 then
+    if not isSecondFloor then
         local bestSpot = CLONE_POSITIONS_FLOOR[1]
         local minDst = math.huge
         for _, v in ipairs(CLONE_POSITIONS_FLOOR) do
@@ -2285,7 +2285,7 @@ local function runAutoSnipe()
             if d < minDst then minDst = d; bestSpot = v end
         end
 
-        -- First floor and second floor: after the first base tween, hard TP to the laser doors.
+        -- First floor: after the first base tween, hard TP to the laser doors.
         -- This prevents carpet/tween momentum from making it walk toward the base instead.
         pcall(function()
             hum:Move(Vector3.zero, false)
@@ -2313,9 +2313,9 @@ local function runAutoSnipe()
     end
     task.wait(0.1)
     hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(bestFace.X, hrp.Position.Y, bestFace.Z))
-    -- Do the clone-in step for first-floor, second-floor, and higher-floor brainrots.
+    -- Do the clone-in step for second-floor and higher-floor brainrots.
     -- Walk a bit farther first so the clone has enough forward push to enter cleanly.
-    local _cloneNeeded = true
+    local _cloneNeeded = isSecondFloor
     local _cloneOk = false
     if _cloneNeeded then
         hrp.Velocity = Vector3.zero; hrp.Velocity = Vector3.zero
