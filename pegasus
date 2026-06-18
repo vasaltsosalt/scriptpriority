@@ -2278,7 +2278,7 @@ local function runAutoSnipe()
     end
     task.wait(0.15)
 
-    if not isSecondFloor then
+    if not isSecondFloor or isFloor2 then
         local bestSpot = CLONE_POSITIONS_FLOOR[1]
         local minDst = math.huge
         for _, v in ipairs(CLONE_POSITIONS_FLOOR) do
@@ -2307,9 +2307,9 @@ local function runAutoSnipe()
     end
     task.wait(0.1)
     hrp.CFrame = CFrame.lookAt(hrp.Position, Vector3.new(bestFace.X, hrp.Position.Y, bestFace.Z))
-    -- Do the clone-in step for second-floor and higher-floor brainrots.
+    -- Do the clone-in step for first-floor, second-floor, and higher-floor brainrots.
     -- Walk a bit farther first so the clone has enough forward push to enter cleanly.
-    local _cloneNeeded = isSecondFloor
+    local _cloneNeeded = true
     local _cloneOk = false
     if _cloneNeeded then
         hrp.Velocity = Vector3.zero; hrp.Velocity = Vector3.zero
